@@ -7,7 +7,7 @@ let drawing  = false;
 ctx.fillStyle = "black";
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 ctx.strokeStyle = "white";
-ctx.lineWidth   = 15;
+ctx.lineWidth   = 4;
 ctx.lineCap     = "round";
 
 canvas.addEventListener("pointerdown", () => { drawing = true; });
@@ -55,7 +55,7 @@ document.getElementById("predict-btn").onclick = async () => {
   for (let i = 0; i < 28 * 28; i++) {
     const idx = 4 * i;
     const avg = (imgData[idx] + imgData[idx + 1] + imgData[idx + 2]) / 3;
-    input[i] = (255 - avg) / 255;
+    input[i] = avg / 255;
   }
 
   // C) Run ONNX inference
@@ -63,8 +63,10 @@ document.getElementById("predict-btn").onclick = async () => {
   const outputMap = await session.run({ input: tensor });
   const scores = outputMap.output.data;  // Float32Array of length 4
 
+  console.log("Raw model scores:", scores);
+
   // D) Map to labels
-  const labels = ["Circle", "Square", "Triangle", "Star"];
+  const labels = ["circle", "square", "triangle", "star"];
   const maxIdx = scores.indexOf(Math.max(...scores));
   document.getElementById("result").textContent =
     `I’m pretty sure that’s a: ${labels[maxIdx]}`;
