@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Draw & Classify Shapes</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Draw a Shape</h1>
+
+  <!-- 1) Drawing canvas -->
+  <canvas id="draw-canvas" width="280" height="280"></canvas>
+
+  <!-- 2) Controls -->
+  <div class="controls">
+    <button id="clear-btn">Clear</button>
+    <button id="predict-btn">Predict</button>
+  </div>
+
+  <!-- 3) Prediction output -->
+  <p id="result">Loading model…</p>
+
+  <!-- 4) ONNX Runtime Web -->
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
