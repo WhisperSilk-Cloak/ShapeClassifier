@@ -7,7 +7,7 @@ let drawing  = false;
 ctx.fillStyle = "black";
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 ctx.strokeStyle = "white";
-ctx.lineWidth   = 4;
+ctx.lineWidth   = 2;
 ctx.lineCap     = "round";
 
 canvas.addEventListener("pointerdown", () => { drawing = true; });
