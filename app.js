@@ -7,7 +7,7 @@ let drawing  = false;
 ctx.fillStyle = "black";
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 ctx.strokeStyle = "white";
-ctx.lineWidth   = 2;
+ctx.lineWidth   = 20;
 ctx.lineCap     = "round";
 
 canvas.addEventListener("pointerdown", () => { drawing = true; });
@@ -64,8 +64,10 @@ document.getElementById("predict-btn").onclick = async () => {
   const input   = new Float32Array(28 * 28);
   for (let i = 0; i < 28 * 28; i++) {
     const idx = 4 * i;
-    const avg = (imgData[idx] + imgData[idx + 1] + imgData[idx + 2]) / 3;
-    input[i] = avg / 255;
+    const avg  = (imgData[idx] + imgData[idx + 1] + imgData[idx + 2]) / 3;
+    const norm = avg / 255;      
+// ↓ force pixels to 0 or 1 to match training’s hard edges
+    input[i]    = norm > 0.5 ? 1.0 : 0.0;
   }
 
   // C) Run ONNX inference
