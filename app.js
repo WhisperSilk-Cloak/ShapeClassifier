@@ -43,10 +43,15 @@ document.getElementById("predict-btn").onclick = async () => {
     return;
   }
 
-  // A) Downscale canvas to 28×28 offscreen
+  // A) Downscale canvas to 28×28 offscreen (no smoothing)
   const off = document.createElement("canvas");
   off.width = 28; off.height = 28;
   const offCtx = off.getContext("2d");
+
+  // ← Disable image smoothing so we get hard pixels, matching training data
+  offCtx.imageSmoothingEnabled = false;
+  offCtx.imageSmoothingQuality = "low";
+
   offCtx.drawImage(canvas, 0, 0, 28, 28);
 
   // ↓ Show a 5× magnified preview so we can debug what the model sees
