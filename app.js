@@ -60,15 +60,67 @@ document.getElementById("predict-btn").onclick = async () => {
   preview.getContext("2d").drawImage(off, 0, 0, 140, 140);
 
   // B) Extract and normalize pixels into Float32Array [1,1,28,28]
-  const imgData = offCtx.getImageData(0, 0, 28, 28).data;
-  const input   = new Float32Array(28 * 28);
-  for (let i = 0; i < 28 * 28; i++) {
-    const idx = 4 * i;
-    const avg  = (imgData[idx] + imgData[idx + 1] + imgData[idx + 2]) / 3;
-    const norm = avg / 255;      
-// ↓ force pixels to 0 or 1 to match training’s hard edges
-    input[i]    = norm > 0.5 ? 1.0 : 0.0;
+const imgData = offCtx.getImageData(0, 0, 28, 28).data;
+let input     = new Float32Array(28 * 28);
+for (let i = 0; i < 28 * 28; i++) {
+  const idx = 4 * i;
+  const avg  = (imgData[idx] + imgData[idx + 1] + imgData[idx + 2]) / 3;
+  const norm = avg / 255;
+  input[i]   = norm > 0.5 ? 1.0 : 0.0;
+}
+
+// ─── Morphological Closing: Dilate then Erode ───
+const SIZE = 28;
+function closing(bin) {
+  // 1) Dilation
+  let dilated = new Float32Array(bin.length);
+  for (let i = 0; i < bin.length; i++) {
+    if (bin[i] === 1) {
+      dilated[i] = 1;
+    } else {
+      const x = i % SIZE, y = Math.floor(i / SIZE);
+      let found = false;
+      for (let dy = -1; dy <= 1 && !found; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const xx = x + dx, yy = y + dy;
+          if (xx >= 0 && xx < SIZE && yy >= 0 && yy < SIZE) {
+            if (bin[yy*SIZE + xx] === 1) {
+              dilated[i] = 1;
+              found = true;
+              break;
+            }
+          }
+        }
+      }
+    }
   }
+  // 2) Erosion
+  let closed = new Float32Array(bin.length);
+  for (let i = 0; i < bin.length; i++) {
+    if (dilated[i] === 0) {
+      closed[i] = 0;
+    } else {
+      const x = i % SIZE, y = Math.floor(i / SIZE);
+      let allOnes = true;
+      for (let dy = -1; dy <= 1 && allOnes; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const xx = x + dx, yy = y + dy;
+          if (xx >= 0 && xx < SIZE && yy >= 0 && yy < SIZE) {
+            if (dilated[yy*SIZE + xx] === 0) {
+              allOnes = false;
+              break;
+            }
+          }
+        }
+      }
+      closed[i] = allOnes ? 1 : 0;
+    }
+  }
+  return closed;
+}
+
+// Apply closing
+input = closing(input);
 
   // C) Run ONNX inference
   const tensor = new ort.Tensor("float32", input, [1, 1, 28, 28]);
