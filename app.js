@@ -1,6 +1,7 @@
 // ─────────────── 1) Setup Canvas Drawing ───────────────
 const canvas = document.getElementById("draw-canvas");
 const ctx    = canvas.getContext("2d");
+const RES    = 64; 
 let drawing  = false;
 
 // Initialize: black background, white “pen”
@@ -45,14 +46,14 @@ document.getElementById("predict-btn").onclick = async () => {
 
   // A) Downscale canvas to 28×28 offscreen (no smoothing)
   const off = document.createElement("canvas");
-  off.width = 28; off.height = 28;
+  off.width = RES; off.height = RES;
   const offCtx = off.getContext("2d");
 
   // ← Disable image smoothing so we get hard pixels, matching training data
   offCtx.imageSmoothingEnabled = false;
   offCtx.imageSmoothingQuality = "low";
 
-  offCtx.drawImage(canvas, 0, 0, 28, 28);
+  offCtx.drawImage(canvas, 0, 0, RES, RES);
 
   // ↓ Show a 5× magnified preview so we can debug what the model sees
   const preview = document.getElementById("preview-canvas");
@@ -60,9 +61,9 @@ document.getElementById("predict-btn").onclick = async () => {
   preview.getContext("2d").drawImage(off, 0, 0, 140, 140);
 
   // B) Extract and normalize pixels into Float32Array [1,1,28,28]
-const imgData = offCtx.getImageData(0, 0, 28, 28).data;
-let input     = new Float32Array(28 * 28);
-for (let i = 0; i < 28 * 28; i++) {
+const imgData = offCtx.getImageData(0, 0, RES, RES).data;
+let input     = new Float32Array(RES * RES);
+for (let i = 0; i < RES * RES; i++) {
   const idx = 4 * i;
   const avg  = (imgData[idx] + imgData[idx + 1] + imgData[idx + 2]) / 3;
   const norm = avg / 255;
@@ -70,7 +71,7 @@ for (let i = 0; i < 28 * 28; i++) {
 }
 
 // ─── Morphological Closing: Dilate then Erode ───
-const SIZE = 28;
+const SIZE = RES;
 function closing(bin) {
   // 1) Dilation
   let dilated = new Float32Array(bin.length);
@@ -123,7 +124,7 @@ function closing(bin) {
 input = closing(input);
 
   // C) Run ONNX inference
-  const tensor = new ort.Tensor("float32", input, [1, 1, 28, 28]);
+  const tensor = new ort.Tensor("float32", input, [1, 1, RES, RES]);
   const outputMap = await session.run({ input: tensor });
   const scores = outputMap.output.data;  // Float32Array of length 4
 
