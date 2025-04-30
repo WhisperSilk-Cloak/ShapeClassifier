@@ -58,7 +58,7 @@ document.getElementById("predict-btn").onclick = async () => {
   // ↓ Show a 5× magnified preview so we can debug what the model sees
   const preview = document.getElementById("preview-canvas");
   preview.getContext("2d").imageSmoothingEnabled = false;
-  preview.getContext("2d").drawImage(off, 0, 0, 140, 140);
+  preview.getContext("2d").drawImage(off, 0, 0, 320, 320);
 
   // B) Extract and normalize pixels into Float32Array
 const imgData = offCtx.getImageData(0, 0, RES, RES).data;
@@ -126,7 +126,7 @@ input = closing(input);
   // C) Run ONNX inference
   const tensor = new ort.Tensor("float32", input, [1, 1, RES, RES]);
   const outputMap = await session.run({ input: tensor });
-  const scores = outputMap.output.data;  // Float32Array of length 4
+  const scores = outputMap.output.data;  // Float32Array of length 3
 
   console.log("Raw model scores:", scores);
 
