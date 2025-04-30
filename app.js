@@ -58,7 +58,7 @@ document.getElementById("predict-btn").onclick = async () => {
   // ↓ Show a 5× magnified preview so we can debug what the model sees
   const preview = document.getElementById("preview-canvas");
   preview.getContext("2d").imageSmoothingEnabled = false;
-  preview.getContext("2d").drawImage(off, 0, 0, 320, 320);
+  preview.getContext("2d").drawImage(off, 0, 0, 140, 140);
 
   // B) Extract and normalize pixels into Float32Array
 const imgData = offCtx.getImageData(0, 0, RES, RES).data;
