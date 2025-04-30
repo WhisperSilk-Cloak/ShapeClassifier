@@ -131,7 +131,7 @@ input = closing(input);
   console.log("Raw model scores:", scores);
 
   // D) Map to labels
-  const labels = ["circle", "square", "triangle", "star"];
+  const labels = ["circle", "square", "triangle"];
   const maxIdx = scores.indexOf(Math.max(...scores));
   document.getElementById("result").textContent =
     `I’m pretty sure that’s a: ${labels[maxIdx]}`;
