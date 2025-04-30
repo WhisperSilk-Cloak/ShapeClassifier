@@ -8,7 +8,7 @@ let drawing  = false;
 ctx.fillStyle = "black";
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 ctx.strokeStyle = "white";
-ctx.lineWidth   = 20;
+ctx.lineWidth   = 10;
 ctx.lineCap     = "round";
 
 canvas.addEventListener("pointerdown", () => { drawing = true; });
@@ -44,7 +44,7 @@ document.getElementById("predict-btn").onclick = async () => {
     return;
   }
 
-  // A) Downscale canvas to 28×28 offscreen (no smoothing)
+  // A) Downscale canvas to 64 x 64
   const off = document.createElement("canvas");
   off.width = RES; off.height = RES;
   const offCtx = off.getContext("2d");
@@ -60,7 +60,7 @@ document.getElementById("predict-btn").onclick = async () => {
   preview.getContext("2d").imageSmoothingEnabled = false;
   preview.getContext("2d").drawImage(off, 0, 0, 140, 140);
 
-  // B) Extract and normalize pixels into Float32Array [1,1,28,28]
+  // B) Extract and normalize pixels into Float32Array
 const imgData = offCtx.getImageData(0, 0, RES, RES).data;
 let input     = new Float32Array(RES * RES);
 for (let i = 0; i < RES * RES; i++) {
