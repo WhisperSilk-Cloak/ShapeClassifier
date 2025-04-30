@@ -1,4 +1,4 @@
-// ─────────────── 1) Setup Canvas Drawing ───────────────
+// Setup Canvas Drawing 
 const canvas = document.getElementById("draw-canvas");
 const ctx    = canvas.getContext("2d");
 const RES    = 64; 
@@ -22,13 +22,13 @@ canvas.addEventListener("pointermove", e => {
   ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
 });
 
-// ─────────────── 2) Clear Button ───────────────
+// Clear Button
 document.getElementById("clear-btn").onclick = () => {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   document.getElementById("result").textContent = "Canvas cleared.";
 };
 
-// ─────────────── 3) Load ONNX Model ───────────────
+// Load ONNX Model
 let session;
 ort.InferenceSession.create("shape_classifier.onnx")
   .then(s => {
@@ -37,30 +37,30 @@ ort.InferenceSession.create("shape_classifier.onnx")
   })
   .catch(err => console.error("Failed to load ONNX model:", err));
 
-// ─────────────── 4) Predict Button ───────────────
+// Predict Button 
 document.getElementById("predict-btn").onclick = async () => {
   if (!session) {
     alert("Model still loading…");
     return;
   }
 
-  // A) Downscale canvas to 64 x 64
+  // Downscale canvas to 64 x 64
   const off = document.createElement("canvas");
   off.width = RES; off.height = RES;
   const offCtx = off.getContext("2d");
 
-  // ← Disable image smoothing so we get hard pixels, matching training data
+  // Disable image smoothing so we get hard pixels, matching training data
   offCtx.imageSmoothingEnabled = false;
   offCtx.imageSmoothingQuality = "low";
 
   offCtx.drawImage(canvas, 0, 0, RES, RES);
 
-  // ↓ Show a 5× magnified preview so we can debug what the model sees
+  // Show a 5× magnified preview so we can debug what the model sees
   const preview = document.getElementById("preview-canvas");
   preview.getContext("2d").imageSmoothingEnabled = false;
   preview.getContext("2d").drawImage(off, 0, 0, 140, 140);
 
-  // B) Extract and normalize pixels into Float32Array
+  // Extract and normalize pixels into Float32Array
 const imgData = offCtx.getImageData(0, 0, RES, RES).data;
 let input     = new Float32Array(RES * RES);
 for (let i = 0; i < RES * RES; i++) {
@@ -70,10 +70,10 @@ for (let i = 0; i < RES * RES; i++) {
   input[i]   = norm > 0.5 ? 1.0 : 0.0;
 }
 
-// ─── Morphological Closing: Dilate then Erode ───
+//Morphological Closing: Dilate then Erode
 const SIZE = RES;
 function closing(bin) {
-  // 1) Dilation
+  // Dilation
   let dilated = new Float32Array(bin.length);
   for (let i = 0; i < bin.length; i++) {
     if (bin[i] === 1) {
@@ -95,7 +95,7 @@ function closing(bin) {
       }
     }
   }
-  // 2) Erosion
+  // Erosion
   let closed = new Float32Array(bin.length);
   for (let i = 0; i < bin.length; i++) {
     if (dilated[i] === 0) {
@@ -123,14 +123,14 @@ function closing(bin) {
 // Apply closing
 input = closing(input);
 
-  // C) Run ONNX inference
+  // Run ONNX inference
   const tensor = new ort.Tensor("float32", input, [1, 1, RES, RES]);
   const outputMap = await session.run({ input: tensor });
   const scores = outputMap.output.data;  // Float32Array of length 3
 
   console.log("Raw model scores:", scores);
 
-  // D) Map to labels
+  // Map to labels
   const labels = ["circle", "square", "triangle"];
   const maxIdx = scores.indexOf(Math.max(...scores));
   document.getElementById("result").textContent =
