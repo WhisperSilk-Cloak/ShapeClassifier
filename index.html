@@ -8,22 +8,22 @@
 <body>
   <h1>Draw a Shape</h1>
 
-  <!-- 1) Drawing canvas -->
+  <!-- Drawing canvas -->
   <canvas id="draw-canvas" width="280" height="280"></canvas>
 
-  <!-- 1.5) Preview of what the model sees (5× magnified) -->
+  <!-- Preview of what the model sees (5× magnified) -->
   <canvas id="preview-canvas" width="140" height="140"></canvas>
 
-  <!-- 2) Controls -->
+  <!-- Controls -->
   <div class="controls">
     <button id="clear-btn">Clear</button>
     <button id="predict-btn">Predict</button>
   </div>
 
-  <!-- 3) Prediction output -->
+  <!-- Prediction output -->
   <p id="result">Loading model…</p>
 
-  <!-- 4) ONNX Runtime Web -->
+  <!--  ONNX Runtime Web -->
   <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
   <script src="app.js"></script>
 </body>
