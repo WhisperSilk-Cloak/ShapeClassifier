@@ -60,6 +60,56 @@ document.getElementById("predict-btn").onclick = async () => {
   preview.getContext("2d").imageSmoothingEnabled = false;
   preview.getContext("2d").drawImage(off, 0, 0, 140, 140);
 
+  // Dilate then Erode
+const SIZE = RES;
+function closing(bin) {
+  // Dilation
+  let dilated = new Float32Array(bin.length);
+  for (let i = 0; i < bin.length; i++) {
+    if (bin[i] === 1) {
+      dilated[i] = 1;
+    } else {
+      const x = i % SIZE, y = Math.floor(i / SIZE);
+      let found = false;
+      for (let dy = -1; dy <= 1 && !found; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const xx = x + dx, yy = y + dy;
+          if (xx >= 0 && xx < SIZE && yy >= 0 && yy < SIZE) {
+            if (bin[yy*SIZE + xx] === 1) {
+              dilated[i] = 1;
+              found = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+  // Erosion
+  let closed = new Float32Array(bin.length);
+  for (let i = 0; i < bin.length; i++) {
+    if (dilated[i] === 0) {
+      closed[i] = 0;
+    } else {
+      const x = i % SIZE, y = Math.floor(i / SIZE);
+      let allOnes = true;
+      for (let dy = -1; dy <= 1 && allOnes; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const xx = x + dx, yy = y + dy;
+          if (xx >= 0 && xx < SIZE && yy >= 0 && yy < SIZE) {
+            if (dilated[yy*SIZE + xx] === 0) {
+              allOnes = false;
+              break;
+            }
+          }
+        }
+      }
+      closed[i] = allOnes ? 1 : 0;
+    }
+  }
+  return closed;
+}
+
   // Extract and normalize pixels into Float32Array
 const imgData = offCtx.getImageData(0, 0, RES, RES).data;
 let input     = new Float32Array(RES * RES);
